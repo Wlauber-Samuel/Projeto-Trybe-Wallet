@@ -15,8 +15,4 @@ describe('Test Login', () => {
     expect(password).toBeInTheDocument();
     expect(button).toBeInTheDocument();
   });
-
-  it("", () => {
-
-  });
 });
