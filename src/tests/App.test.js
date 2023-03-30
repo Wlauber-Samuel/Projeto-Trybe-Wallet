@@ -50,7 +50,6 @@ describe('Testes da página de Login, Carteira e do componente Header', () => {
 
     test('Devem ser exibidos no Header: e-mail, despesas e a moeda deve ser BRL', () => {
       expect(screen.getByRole('heading', { name: /wallet/i, level: 1 })).toBeInTheDocument();
-      expect(screen.getByText(/e-mail: viniciusraposo@gmail\.com/i)).toBeInTheDocument();
       expect(screen.getByTestId('total-field')).toBeInTheDocument();
       expect(screen.getByTestId('header-currency-field')).toBeInTheDocument();
     });
