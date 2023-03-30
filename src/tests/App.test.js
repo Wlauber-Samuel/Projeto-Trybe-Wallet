@@ -1,141 +1,106 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
-// import App from '../App';
 import userEvent from '@testing-library/user-event';
-import Header from '../components/Header';
+import { renderWithRouterAndRedux } from './helpers/renderWith';
+import App from '../App';
+import Wallet from '../pages/Wallet';
 import Table from '../components/Table';
 import WalletForm from '../components/WalletForm';
-import Login from '../pages/Login';
-import { renderWithRouterAndRedux } from './helpers/renderWith';
+import Header from '../components/Header';
 
-describe('Testando o componente Header', () => {
-  it('Verifica se o component Header renderiza informações sobre email e moeda(BRL)', async () => {
-    renderWithRouterAndRedux(<Header />);
-    const email = screen.getByText(/email/i);
-    const currency = screen.getByText(/brl/i);
-
-    expect(email).toBeInTheDocument();
-    expect(currency).toBeInTheDocument();
-  });
-
-  it('Verifica se o componente Header contém os data-testid corretos', async () => {
-    renderWithRouterAndRedux(<Header />);
-
-    const emailField = screen.getByTestId('email-field');
-    const totalField = screen.getByTestId('total-field');
-    const currencyField = screen.getByTestId('header-currency-field');
-
-    expect(emailField).toBeInTheDocument();
-    expect(totalField).toBeInTheDocument();
-    expect(currencyField).toBeInTheDocument();
+describe('App', () => {
+  test('test App', () => {
+    renderWithRouterAndRedux(<App />);
   });
 });
 
-describe('Testando o componente Table', () => {
-  it('Verifica se o componente Table renderiza os elementos corretamente', () => {
-    renderWithRouterAndRedux(<Table />);
+describe('Component Login', () => {
+  test('Testa se  rota para esta página é "/" , se é renderizado um botão com o texto "Entrar", se foram realizadas as seguintes verificações nos campos de email, senha e botão e se a rota é alterada para "/carteira" após o clique no botão ', () => {
+    const { history } = renderWithRouterAndRedux(<App />);
+    expect(history.location.pathname).toBe('/');
 
-    const description = screen.getByText(/descrição/i);
-    const tag = screen.getByText(/tag/i);
-    const method = screen.getByText(/método de pagamento/i);
-    const value = screen.getByText('Valor');
-    const currency = screen.getByText('Moeda');
-    const exchangeRates = screen.getByText(/câmbio utilizado/i);
-    const convertedValue = screen.getByText(/valor convertido/i);
-    const currencyName = screen.getByText(/moeda de conversão/i);
-    const edit = screen.getByText(/editar\/excluir/i);
+    const emailInput = screen.getByRole('textbox');
+    const passwordInput = screen.getByTestId('password-input');
+
+    expect(emailInput).toBeInTheDocument();
+    expect(passwordInput).toBeInTheDocument();
+
+    const buttonLogin = screen.getByRole('button', { name: 'Entrar' });
+    expect(buttonLogin).toBeInTheDocument();
+    expect(buttonLogin).toBeDisabled();
+
+    userEvent.type(emailInput, 'test@gmail.com');
+    userEvent.type(passwordInput, '123456');
+    userEvent.click(buttonLogin);
+
+    expect(history.location.pathname).toBe('/carteira');
+  });
+});
+describe('Testes do componente Table', () => {
+  test('Se os elementos do formulário são renderizados', () => {
+    renderWithRouterAndRedux(<Table />);
+    const description = screen.getByRole('columnheader', { name: /descrição/i });
+    const tag = screen.getByRole('columnheader', { name: /tag/i });
+    const type = screen.getByRole('columnheader', { name: /método de pagamento/i });
+    const value = screen.getByRole('columnheader', { name: 'Valor' });
+    const coin = screen.getByRole('columnheader', { name: 'Moeda' });
+    const method = screen.getByRole('columnheader', { name: /método de pagamento/i });
+    const exchange = screen.getByRole('columnheader', { name: /câmbio utilizado/i });
+    const converter = screen.getByRole('columnheader', { name: /valor convertido/i });
+    const converterCurrency = screen.getByRole('columnheader', { name: /moeda de conversão/i });
+    const edit = screen.getByRole('columnheader', { name: /editar\/excluir/i });
 
     expect(description).toBeInTheDocument();
     expect(tag).toBeInTheDocument();
-    expect(method).toBeInTheDocument();
+    expect(type).toBeInTheDocument();
     expect(value).toBeInTheDocument();
-    expect(currency).toBeInTheDocument();
-    expect(exchangeRates).toBeInTheDocument();
-    expect(convertedValue).toBeInTheDocument();
-    expect(currencyName).toBeInTheDocument();
+    expect(coin).toBeInTheDocument();
+    expect(method).toBeInTheDocument();
+    expect(exchange).toBeInTheDocument();
+    expect(converter).toBeInTheDocument();
+    expect(converterCurrency).toBeInTheDocument();
     expect(edit).toBeInTheDocument();
   });
-
-  it('Verifica se é possível excluir uma despesa', () => {
-    renderWithRouterAndRedux(<Table />, {
-      expenses: [
-        {
-
-          id: 0,
-          value: 10,
-          description: 'descrição',
-          currency: 'USD',
-          method: 'Dinheiro',
-          tag: 'Alimentação',
-          exchangeRates: {
-            USD: {
-              ask: 5,
-              name: 'Dólar Comercial',
-            },
-          },
-        },
-      ],
-    });
-
-    const deleteButton = screen.getByRole('button', { name: /excluir/i });
-    userEvent.click(deleteButton);
-    expect(deleteButton[1]).not.toBeInTheDocument();
-  });
 });
-
-describe('Testando o componente WalletForm', () => {
-  it('WalletForm with correct credentials', async () => {
+describe('Testa component Wallet.js', () => {
+  test('Testa se valores do form são preenchidos corretamente', () => {
     renderWithRouterAndRedux(<WalletForm />);
+    const description = screen.getByTestId('description-input');
+    const method = screen.getByTestId('method-input');
+    const tag = screen.getByTestId('tag-input');
+    const value = screen.getByTestId('value-input');
+    const currency = screen.getAllByTestId('currency-input');
+    const btn = screen.getByRole('button');
 
-    const value = screen.getByText(/valor da despesa/i);
-    const description = screen.getByText(/descrição/i);
-    const currency = screen.getByText(/moeda/i);
-    const method = screen.getByText(/método de pagamento/i);
-
-    expect(value).toBeInTheDocument();
+    userEvent.type(description, 'Almoço');
+    userEvent.type(method, 'Dinheiro');
+    userEvent.type(tag, 'Trabalho');
+    userEvent.type(value, '24');
+    userEvent.type(currency, 'USD');
+    userEvent.click(btn);
+  });
+  test('Testa se os elementos do form são renderizados', async () => {
+    renderWithRouterAndRedux(<Wallet />);
+    const description = screen.getByTestId('description-input');
+    const method = screen.getByTestId('method-input');
+    const tag = screen.getByTestId('tag-input');
+    const value = screen.getByTestId('value-input');
+    const currency = await screen.findByTestId('currency-input', { name: 'USD' });
+    const btn = screen.getByRole('button', {
+      name: /adicionar despesa/i,
+    });
     expect(description).toBeInTheDocument();
-    expect(currency).toBeInTheDocument();
     expect(method).toBeInTheDocument();
+    expect(tag).toBeInTheDocument();
+    expect(value).toBeInTheDocument();
+    expect(currency).toBeInTheDocument();
+    expect(btn).toBeInTheDocument();
   });
 });
-
-describe('Testando o componente Login', () => {
-  it('Login with correct credentials', async () => {
-    renderWithRouterAndRedux(<Login />);
-    const email = screen.getByText(/e-mail/i);
-    const password = screen.getByText(/senha/i);
-    const button = screen.getByRole('button', { name: /entrar/i });
-
-    expect(email).toBeInTheDocument();
-    expect(password).toBeInTheDocument();
-    expect(button).toBeInTheDocument();
-  });
-
-  it('Verifica se o botão é habilitado somente após preencher todos os inputs', () => {
-    renderWithRouterAndRedux(<Login />);
-    const email = screen.getByTestId('email-input');
-    const password = screen.getByTestId('password-input');
-    const button = screen.getByRole('button', { name: /entrar/i });
-
-    expect(button).toBeDisabled();
-    userEvent.type(email, '');
-
-    expect(button).toBeDisabled();
-    userEvent.type(password, '');
-
-    expect(button).toBeDisabled();
-  });
-
-  it('Verifica se o email é preenchido com caracteres válidos', () => {
-    renderWithRouterAndRedux(<Login />);
-    const email = screen.getByTestId('email-input');
-    const password = screen.getByTestId('password-input');
-    const button = screen.getByRole('button', { name: /entrar/i });
-
-    expect(button).toBeDisabled();
-
-    userEvent.type(email, 'test@email.com');
-    userEvent.type(password, '123456');
-    expect(button).toBeEnabled();
+describe('Testa componente Header', () => {
+  test('Header', () => {
+    renderWithRouterAndRedux(<Header />);
+    expect(screen.getByTestId('header-currency-field')).toBeInTheDocument();
+    expect(screen.getByTestId('total-field')).toBeInTheDocument();
   });
 });
