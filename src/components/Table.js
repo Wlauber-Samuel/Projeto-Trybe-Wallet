@@ -15,7 +15,7 @@ class Table extends Component {
   };
 
   render() {
-    const { expenses } = this.props;
+    const { expenses, editor } = this.props;
     return (
       <div>
         <table>
@@ -54,6 +54,7 @@ class Table extends Component {
                   <button
                     type="button"
                     data-testid="edit-btn"
+                    disabled={ editor }
                     onClick={ () => this.handleEdit(expense.id) }
                   >
                     Editar despesa
@@ -77,6 +78,7 @@ class Table extends Component {
 
 const mapStateToProps = (globalState) => ({
   expenses: globalState.wallet.expenses,
+  editor: globalState.wallet.editor,
 });
 
 Table.propTypes = {

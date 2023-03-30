@@ -6,6 +6,7 @@ class Header extends Component {
   render() {
     const { email } = this.props;
     const { expenses } = this.props;
+    console.log(expenses);
     return (
       <div>
         <p data-testid="email-field">
@@ -18,7 +19,6 @@ class Header extends Component {
             sum += Number(value) * Number(exchangeRates[currency].ask);
             return Number(sum);
           }, 0).toFixed(2) }
-
         </p>
 
         <p data-testid="header-currency-field">BRL</p>
@@ -30,6 +30,7 @@ class Header extends Component {
 const mapStateToProps = (state) => ({
   email: state.user.email,
   expenses: state.wallet.expenses,
+  // setTotal: state.wallet.total,
 });
 
 Header.propTypes = {

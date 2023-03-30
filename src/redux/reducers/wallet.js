@@ -3,13 +3,18 @@ import { SAVE_CURRENCIES,
   DELETE_EXPENSES,
   EDIT_EXPENSES,
   EDITED_EXPENSES,
+  SET_CONTROL_UPDATE,
+  EDITING_EXPENSES,
+  EDIT_FALSE,
+  // SET_TOTAL,
 } from '../actions';
 
 const INITIAL_STATE = {
   currencies: [], // array de string
   expenses: [], // array de objetos, com cada objeto tendo as chaves id, value, currency, method, tag, description e exchangeRates
   editor: false, // valor booleano que indica de uma despesa está sendo editada
-  idToEdit: 0, // valor numérico que armazena o id da despesa que esta sendo editada
+  expenseEdit: {}, // objeto que armazena a despesa que esta sendo editada
+  controlUpdate: false, // valor booleano que indica se o estado expenseEdit deve ser atualizado
 };
 
 const wallet = (state = INITIAL_STATE, action) => {
@@ -33,19 +38,28 @@ const wallet = (state = INITIAL_STATE, action) => {
     return {
       ...state,
       editor: true,
-      idToEdit: action.id,
+      controlUpdate: true,
+      expenseEdit: state.expenses.find((expense) => expense.id === action.id),
     };
   case EDITED_EXPENSES:
     return {
       ...state,
-      expenses: state.expenses.map((expense) => {
-        if (expense.id === action.payload.id) {
-          return {
-            ...action.payload,
-          };
-        }
-        return expense;
-      }),
+      expenseEdit: state.expenses.find((expense) => expense.id === action.id),
+    };
+  case SET_CONTROL_UPDATE:
+    return {
+      ...state,
+      controlUpdate: action.status,
+    };
+  case EDITING_EXPENSES:
+    return {
+      ...state,
+      expenses: action.payload,
+    };
+  case EDIT_FALSE:
+    return {
+      ...state,
+      editor: false,
     };
   default:
     return state;
@@ -53,10 +67,3 @@ const wallet = (state = INITIAL_STATE, action) => {
 };
 
 export default wallet;
-
-// step 1: iniciar edição;
-// Quando o usuario começar a editar troca o valor de editor para true e o idToEdit recebe o id da despesa que esta sendo editada
-// step 2: Capturar o valor que está armazenado refererente ao idToEdit e coloca-lo no valor do input;
-// step 3: Substituir o valor atual e salvar no redux; map or reduce;
-// step 4: Quando o usuario clicar em salvar troca o valor de editor para false e o idToEdit recebe 0;
-// step 5: Quando o usuario clicar em cancelar troca o valor de editor para false e o idToEdit recebe 0;

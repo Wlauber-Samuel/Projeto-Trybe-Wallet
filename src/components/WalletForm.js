@@ -1,7 +1,11 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { requestAPI, saveExpenses, setExpenses } from '../redux/actions';
+import Header from './Header';
+import { requestAPI,
+  saveExpenses,
+  setExpenses,
+  setControlUpdate, editingExpenses, editFalse } from '../redux/actions';
 
 class WalletForm extends Component {
   state = {
@@ -17,6 +21,20 @@ class WalletForm extends Component {
   async componentDidMount() {
     const { dispatch } = this.props;
     await dispatch(requestAPI());
+  }
+
+  componentDidUpdate() {
+    const { expenseEdit, controlUpdate, dispatch } = this.props;
+    if (controlUpdate) {
+      this.setState({
+        value: expenseEdit.value,
+        description: expenseEdit.description,
+        currency: expenseEdit.currency,
+        method: expenseEdit.method,
+        tag: expenseEdit.tag,
+      });
+      dispatch(setControlUpdate(false));
+    }
   }
 
   handleChange = ({ target: { name, value } }) => {
@@ -40,11 +58,50 @@ class WalletForm extends Component {
     });
   };
 
+  // totalValue = () => {
+  //   const { expenses } = this.props;
+  //   const total = expenses.reduce((sum, { value, currency, exchangeRates }) => {
+  //     sum += Number(value) * Number(exchangeRates[currency].ask);
+  //     return Number(sum);
+  //   }, 0).toFixed(2);
+  //   dispatch(setTotal(total));
+  // };
+
+  handleEdit = () => {
+    const { dispatch, expenseEdit, expenses } = this.props;
+    const { value, description, currency, method, tag } = this.state;
+    const { id, exchangeRates } = expenseEdit;
+    const newExpenseData = {
+      value,
+      description,
+      currency,
+      method,
+      tag,
+      id,
+      exchangeRates,
+    };
+    const newExpenses = expenses.map((expense) => {
+      if (expense.id === id) {
+        return { ...expense, ...newExpenseData };
+      }
+      return expense;
+    });
+    // expenses[index] = newExpenseData;
+    console.log(newExpenses);
+    dispatch(editingExpenses(newExpenses));
+    dispatch(editFalse());
+    this.setState({
+      value: '',
+      description: '',
+    });
+  };
+
   render() {
     const { value, description } = this.state;
     const { currencies, editor } = this.props;
     return (
       <form>
+        <Header />
         <label htmlFor="value">
           Valor da despesa:
           <input
@@ -110,7 +167,7 @@ class WalletForm extends Component {
           </select>
         </label>
         { editor
-          ? <button type="button" onClick={ this.handleClick }>Editar despesa</button>
+          ? <button type="button" onClick={ this.handleEdit }>Editar despesa</button>
           : <button type="button" onClick={ this.handleClick }>Adicionar despesa</button>}
       </form>
     );
@@ -120,7 +177,9 @@ class WalletForm extends Component {
 const mapStateToProps = (globalState) => ({
   currencies: globalState.wallet.currencies,
   editor: globalState.wallet.editor,
-  idToEdit: globalState.wallet.idToEdit,
+  expenseEdit: globalState.wallet.expenseEdit,
+  controlUpdate: globalState.wallet.controlUpdate,
+  expenses: globalState.wallet.expenses,
 });
 
 WalletForm.propTypes = {
@@ -128,7 +187,3 @@ WalletForm.propTypes = {
 }.isRequired;
 
 export default connect(mapStateToProps)(WalletForm);
-
-// step 1: atualizar o editor e IdToEdit;
-// step : renderização condicional;
-// step 3: atualizar o estado global;
