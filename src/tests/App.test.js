@@ -1,106 +1,72 @@
-import React from 'react';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { renderWithRouterAndRedux } from './helpers/renderWith';
+import React from 'react';
 import App from '../App';
-import Wallet from '../pages/Wallet';
-import Table from '../components/Table';
-import WalletForm from '../components/WalletForm';
-import Header from '../components/Header';
+import { renderWithRouterAndRedux } from './helpers/renderWith';
 
-describe('App', () => {
-  test('test App', () => {
+describe('Testes da página de Login, Carteira e do componente Header', () => {
+  beforeEach(() => {
     renderWithRouterAndRedux(<App />);
   });
-});
 
-describe('Component Login', () => {
-  test('Testa se  rota para esta página é "/" , se é renderizado um botão com o texto "Entrar", se foram realizadas as seguintes verificações nos campos de email, senha e botão e se a rota é alterada para "/carteira" após o clique no botão ', () => {
-    const { history } = renderWithRouterAndRedux(<App />);
-    expect(history.location.pathname).toBe('/');
+  const emailInput = 'email-input';
+  const pwInput = 'password-input';
+  const delBtn = 'delete-btn';
 
-    const emailInput = screen.getByRole('textbox');
-    const passwordInput = screen.getByTestId('password-input');
-
-    expect(emailInput).toBeInTheDocument();
-    expect(passwordInput).toBeInTheDocument();
-
-    const buttonLogin = screen.getByRole('button', { name: 'Entrar' });
-    expect(buttonLogin).toBeInTheDocument();
-    expect(buttonLogin).toBeDisabled();
-
-    userEvent.type(emailInput, 'test@gmail.com');
-    userEvent.type(passwordInput, '123456');
-    userEvent.click(buttonLogin);
-
-    expect(history.location.pathname).toBe('/carteira');
-  });
-});
-describe('Testes do componente Table', () => {
-  test('Se os elementos do formulário são renderizados', () => {
-    renderWithRouterAndRedux(<Table />);
-    const description = screen.getByRole('columnheader', { name: /descrição/i });
-    const tag = screen.getByRole('columnheader', { name: /tag/i });
-    const type = screen.getByRole('columnheader', { name: /método de pagamento/i });
-    const value = screen.getByRole('columnheader', { name: 'Valor' });
-    const coin = screen.getByRole('columnheader', { name: 'Moeda' });
-    const method = screen.getByRole('columnheader', { name: /método de pagamento/i });
-    const exchange = screen.getByRole('columnheader', { name: /câmbio utilizado/i });
-    const converter = screen.getByRole('columnheader', { name: /valor convertido/i });
-    const converterCurrency = screen.getByRole('columnheader', { name: /moeda de conversão/i });
-    const edit = screen.getByRole('columnheader', { name: /editar\/excluir/i });
-
-    expect(description).toBeInTheDocument();
-    expect(tag).toBeInTheDocument();
-    expect(type).toBeInTheDocument();
-    expect(value).toBeInTheDocument();
-    expect(coin).toBeInTheDocument();
-    expect(method).toBeInTheDocument();
-    expect(exchange).toBeInTheDocument();
-    expect(converter).toBeInTheDocument();
-    expect(converterCurrency).toBeInTheDocument();
-    expect(edit).toBeInTheDocument();
-  });
-});
-describe('Testa component Wallet.js', () => {
-  test('Testa se valores do form são preenchidos corretamente', () => {
-    renderWithRouterAndRedux(<WalletForm />);
-    const description = screen.getByTestId('description-input');
-    const method = screen.getByTestId('method-input');
-    const tag = screen.getByTestId('tag-input');
-    const value = screen.getByTestId('value-input');
-    const currency = screen.getAllByTestId('currency-input');
-    const btn = screen.getByRole('button');
-
-    userEvent.type(description, 'Almoço');
-    userEvent.type(method, 'Dinheiro');
-    userEvent.type(tag, 'Trabalho');
-    userEvent.type(value, '24');
-    userEvent.type(currency, 'USD');
-    userEvent.click(btn);
-  });
-  test('Testa se os elementos do form são renderizados', async () => {
-    renderWithRouterAndRedux(<Wallet />);
-    const description = screen.getByTestId('description-input');
-    const method = screen.getByTestId('method-input');
-    const tag = screen.getByTestId('tag-input');
-    const value = screen.getByTestId('value-input');
-    const currency = await screen.findByTestId('currency-input', { name: 'USD' });
-    const btn = screen.getByRole('button', {
-      name: /adicionar despesa/i,
+  describe('Testando os inputs de interação do usuário na página de Login', () => {
+    test('Devem existir os campos Usuário e Senha e o botão Entrar', () => {
+      expect(screen.getByTestId(emailInput)).toBeInTheDocument();
+      expect(screen.getByTestId(pwInput)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /entrar/i })).toBeInTheDocument();
     });
-    expect(description).toBeInTheDocument();
-    expect(method).toBeInTheDocument();
-    expect(tag).toBeInTheDocument();
-    expect(value).toBeInTheDocument();
-    expect(currency).toBeInTheDocument();
-    expect(btn).toBeInTheDocument();
+
+    test('O botão Entrar deve estar desabilitado caso não cumpra as exigências de conteúdo', () => {
+      expect(screen.getByRole('button', { name: /entrar/i })).toBeDisabled();
+    });
+
+    test('O botão Entrar deve estar ativo quando um e-mail for digitado e uma senha com 6 dígitos ou mais for inserida', () => {
+      userEvent.type(screen.getByTestId(emailInput), 'viniciusraposo@gmail.com');
+      userEvent.type(screen.getByTestId(pwInput), 'senhaforte');
+
+      expect(screen.getByRole('button', { name: /entrar/i })).toBeEnabled();
+    });
   });
-});
-describe('Testa componente Header', () => {
-  test('Header', () => {
-    renderWithRouterAndRedux(<Header />);
-    expect(screen.getByTestId('header-currency-field')).toBeInTheDocument();
-    expect(screen.getByTestId('total-field')).toBeInTheDocument();
+
+  describe('Teste dos campos da página da Carteira e do componente Header', () => {
+    beforeEach(() => {
+      userEvent.type(screen.getByTestId(emailInput), 'viniciusraposo@gmail.com');
+      userEvent.type(screen.getByTestId(pwInput), 'senhaforte');
+      userEvent.click(screen.getByRole('button', { name: /entrar/i }));
+    });
+
+    test('Devem ser exibidos na carteira os campos: valor, moeda, método de pagamento, categoria, descrição e o botão adicionar despesa', () => {
+      expect(screen.getByTestId('value-input')).toBeInTheDocument();
+      expect(screen.getByTestId('currency-input')).toBeInTheDocument();
+      expect(screen.getByTestId('method-input')).toBeInTheDocument();
+      expect(screen.getByTestId('tag-input')).toBeInTheDocument();
+      expect(screen.getByTestId('description-input')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /adicionar despesa/i })).toBeInTheDocument();
+    });
+
+    test('Devem ser exibidos no Header: e-mail, despesas e a moeda deve ser BRL', () => {
+      expect(screen.getByRole('heading', { name: /wallet/i, level: 1 })).toBeInTheDocument();
+      expect(screen.getByText(/e-mail: viniciusraposo@gmail\.com/i)).toBeInTheDocument();
+      expect(screen.getByTestId('total-field')).toBeInTheDocument();
+      expect(screen.getByTestId('header-currency-field')).toBeInTheDocument();
+    });
+
+    test('Testando adicão, edição e remoção de despesas', async () => {
+      userEvent.type(screen.getByTestId('value-input'), '150');
+      userEvent.click(screen.getByRole('button', { name: /adicionar despesa/i }));
+      await waitFor(() => expect(screen.getByTestId(delBtn)).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByTestId('edit-btn')).toBeInTheDocument());
+
+      userEvent.click(screen.getByTestId('edit-btn'));
+      expect(screen.getByTestId(delBtn)).toBeDisabled();
+      expect(screen.getByRole('heading', { name: /editando despesa: 0/i, level: 5 })).toBeInTheDocument();
+
+      userEvent.click(screen.getByRole('button', { name: /editar despesa/i }));
+      userEvent.click(screen.getByTestId(delBtn));
+    });
   });
 });
